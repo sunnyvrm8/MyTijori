@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/mytijori")
 @Tag(name = "mytijori", description = "MyTijori API")
@@ -63,6 +65,19 @@ public class MyTijoriController {
                 .header("Content-disposition", "attachment; filename=\"" + category + "-" + subCategory + "\"")
                 .body(resource);
     }
+
+    @Operation(summary = "List the files for the specified user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid mobile number supplied", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Not found", content = @Content)})
+    @GetMapping(value = "/files")
+    public ResponseEntity<List<String>> getFiles(@Parameter(description = "Unique mobile number") @RequestParam(value = "mobileNumber") final String mobileNumber) {
+                return ResponseEntity
+                .ok()
+                .body(service.getFiles(mobileNumber));
+    }
+
 
     @Operation(summary = "Deletes the file for the specified user and category")
     @ApiResponses(value = {

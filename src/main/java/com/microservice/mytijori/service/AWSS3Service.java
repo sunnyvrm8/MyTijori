@@ -4,8 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +76,18 @@ public class AWSS3Service {
 		final DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, mobileNumber + "/" + category + "/" + subCategory + "/" + category+ "-" + subCategory);
 		amazonS3.deleteObject(deleteObjectRequest);
 		LOGGER.info("File deleted successfully.");
+	}
+
+	@Async
+	public List<String> getFiles(final String mobileNumber) {
+		ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(mobileNumber);
+		ListObjectsV2Result listing = amazonS3.listObjectsV2(req);
+		List<String> resourcePaths = new ArrayList<>();
+		for (S3ObjectSummary summary: listing.getObjectSummaries()) {
+			if(!summary.getKey().endsWith("/"))
+			resourcePaths.add(summary.getKey());
+		}
+		return resourcePaths;
 	}
 
 	private File convertMultiPartFileToFile(final MultipartFile multipartFile) {
